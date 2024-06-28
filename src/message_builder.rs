@@ -1,10 +1,9 @@
 use crate::builder::Builder;
-use tokio::io:: AsyncWriteExt;
+use tokio::io::{AsyncReadExt,  AsyncWriteExt};
 use bitcoin_hashes::{sha256, Hash};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::constants::*;
-
 
 pub struct BTCMessageBuilder {}
 
@@ -24,9 +23,11 @@ impl Builder for BTCMessageBuilder {
         // Payload length
         message.extend(&(payload.len() as u32).to_le_bytes());
 
-        let checksum2 = sha256::Hash::hash(&sha256::Hash::hash(payload)[..]);
+        let checksum = sha256::Hash::hash(&sha256::Hash::hash(payload)[..]);
 
-        message.extend(&checksum2[..4]);
+        message.extend(&checksum[..4]);
+
+        println!("checksum {}",checksum);
 
         //message.extend(&[0x5d,0xf6,0xe0,0xe2]); // if payload is empty
 
@@ -41,10 +42,8 @@ impl Builder for BTCMessageBuilder {
 
         let mut payload = Vec::new();
 
-        // Protocol version
         payload.write_i32_le(PROTOCOL_VERSION).await?;
 
-        // Services
         payload.write_u64_le(SERVICES).await?;
 
         // Timestamp (current time)
@@ -56,16 +55,12 @@ impl Builder for BTCMessageBuilder {
        
         payload.write_i64_le(timestamp).await?;
 
-        // Sender address (empty, as we're not advertising the peer)
-        payload.write_all(&[0; 26]).await?; // includes addr recv
+        payload.write_all(&[0; 26]).await?; // includes services,ip adress, port
 
-        // Sender address (empty, as we're not advertising the peer)
-        payload.write_all(&[0; 26]).await?; // includes addr recv
+        payload.write_all(&[0; 26]).await?; // includes services,ip adress, port
 
-        // Nonce (random unique number for this connection)
         payload.write_all(&[0; 8]).await?;
 
-        // User agent
         let user_agent_bytes = USER_AGENT.as_bytes();
         payload.write_u8(user_agent_bytes.len() as u8).await?;
         payload.write_all(user_agent_bytes).await?;
@@ -75,7 +70,6 @@ impl Builder for BTCMessageBuilder {
         // Start height (current block height)
         payload.write_i32_le(START_HEIGHT).await?;
 
-        // Relay option (true, indicating the remote peer should relay transactions to us)
         payload.write_u8(1).await.unwrap();
         
 

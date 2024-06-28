@@ -26,7 +26,7 @@ impl<C: Connection, B:Builder>  Handshaker <C, B> {
 
         self.connection.write(built_version_message).await?;
 
-        let _recieved_version = self.connection.read().await?;
+        let _recieved_version_payload = self.connection.read().await?;
 
         let verack_message = self.data_processor.verack().await?;
 
@@ -34,7 +34,7 @@ impl<C: Connection, B:Builder>  Handshaker <C, B> {
 
         self.connection.write(built_verack_message).await?;
 
-        let _recieved_verack = self.connection.read().await?;
+        let _recieved_verack_payload = self.connection.read().await?;
 
 
         Ok(())

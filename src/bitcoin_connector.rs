@@ -20,6 +20,19 @@ impl BitcoinConnection {
     }
 }
 
+/* Bitcoin message headers 
+
+src https://developer.bitcoin.org/reference/p2p_networking.html#version
+
+4 bytes start string
+12 bytes command name (padded if shorter)
+4 bytes payload size
+4 bytes (checksum of payload[..4])
+---
+then comes payload 
+
+*/
+
 impl Connection for BitcoinConnection {
     async fn connect(&mut self) -> Result<(), Box<dyn std::error::Error>> {
 
@@ -66,9 +79,6 @@ impl Connection for BitcoinConnection {
             return Ok(payload);
         }
          Err(Box::new(Error::new(ErrorKind::NotConnected, "No connection")))
-
-
-
         
     }
     
