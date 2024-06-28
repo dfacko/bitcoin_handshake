@@ -1,23 +1,21 @@
 use bitcoin_connector::BitcoinConnection;
-use connection::Connection;
 use builder::Builder;
+use connection::Connection;
 use message_builder::BTCMessageBuilder;
 
 mod bitcoin_connector;
 mod builder;
 mod connection;
-mod message_builder;
 mod constants;
+mod message_builder;
 
-pub struct Handshaker < C: Connection, B:Builder > {
-    connection : C,
-    data_processor: B
+pub struct Handshaker<C: Connection, B: Builder> {
+    connection: C,
+    data_processor: B,
 }
 
-impl<C: Connection, B:Builder>  Handshaker <C, B> {
-
-    pub async fn handshake(&mut self) -> Result<(),Box<dyn std::error::Error>>{
-
+impl<C: Connection, B: Builder> Handshaker<C, B> {
+    pub async fn handshake(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.connection.connect().await?;
 
         let version_message = self.data_processor.version().await?;
@@ -36,23 +34,19 @@ impl<C: Connection, B:Builder>  Handshaker <C, B> {
 
         let _recieved_verack = self.connection.read().await?;
 
-
         Ok(())
-
     }
 }
 
 #[tokio::main]
 async fn main() {
-
     let connection = BitcoinConnection::init("127.0.0.1", "18445");
 
     let data_processor = BTCMessageBuilder {};
 
-    
-    let mut  handshaker = Handshaker {
-        connection, 
-        data_processor 
+    let mut handshaker = Handshaker {
+        connection,
+        data_processor,
     };
 
     if let Err(error) = handshaker.handshake().await {
@@ -60,5 +54,4 @@ async fn main() {
     }
 
     println!("Hands have been shaken!");
-
 }

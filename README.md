@@ -40,3 +40,5 @@ From my understanding this should mean that a handshake with the node was succes
 I realize this could have been written much simpler with just ~4 functions called directly from main without any structs and traits, i just like it this way, and makes it potentially easire to test separate parts .
 
 I think it could also be potentially faster if i had not used ``Box<dyn std::error::Error>`` and instead returned a concrete Error.
+
+Update: tried to add tls connection but then I found out its not supported natively.

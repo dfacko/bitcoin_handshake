@@ -1,16 +1,14 @@
 use crate::builder::Builder;
-use tokio::io:: AsyncWriteExt;
 use bitcoin_hashes::{sha256, Hash};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::io::AsyncWriteExt;
 
 use crate::constants::*;
-
 
 pub struct BTCMessageBuilder {}
 
 impl Builder for BTCMessageBuilder {
-    async fn build(&self,command: &str, payload: &[u8]) -> Vec<u8> {
-
+    async fn build(&self, command: &str, payload: &[u8]) -> Vec<u8> {
         let mut message = Vec::new();
 
         // Bitcoin protocol magic bytes (regtest network)
@@ -36,9 +34,7 @@ impl Builder for BTCMessageBuilder {
         message
     }
 
-
     async fn version(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-
         let mut payload = Vec::new();
 
         // Protocol version
@@ -48,12 +44,10 @@ impl Builder for BTCMessageBuilder {
         payload.write_u64_le(SERVICES).await?;
 
         // Timestamp (current time)
-        let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)?
-        .as_secs()as i64;
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
 
         //let timestamp = Utc::now().timestamp();
-       
+
         payload.write_i64_le(timestamp).await?;
 
         // Sender address (empty, as we're not advertising the peer)
@@ -70,20 +64,18 @@ impl Builder for BTCMessageBuilder {
         payload.write_u8(user_agent_bytes.len() as u8).await?;
         payload.write_all(user_agent_bytes).await?;
 
-        payload.write_all(&[0;1]).await?;
+        payload.write_all(&[0; 1]).await?;
 
         // Start height (current block height)
         payload.write_i32_le(START_HEIGHT).await?;
 
         // Relay option (true, indicating the remote peer should relay transactions to us)
         payload.write_u8(1).await.unwrap();
-        
 
         Ok(payload)
     }
-    
-    async fn verack(&self) -> Result< Vec<u8>, Box<dyn std::error::Error>> {
+
+    async fn verack(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(vec![])
     }
-    
 }
