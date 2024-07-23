@@ -1,64 +1,61 @@
 use bitcoin_connector::BitcoinConnection;
-use connection::Connection;
-use builder::Builder;
+use handshaker::Handshaker;
 use message_builder::BTCMessageBuilder;
 
 mod bitcoin_connector;
 mod builder;
 mod connection;
-mod message_builder;
 mod constants;
-
-pub struct Handshaker < C: Connection, B:Builder > {
-    connection : C,
-    data_processor: B
-}
-
-impl<C: Connection, B:Builder>  Handshaker <C, B> {
-
-    pub async fn handshake(&mut self) -> Result<(),Box<dyn std::error::Error>>{
-
-        self.connection.connect().await?;
-
-        let version_message = self.data_processor.version().await?;
-
-        let built_version_message = self.data_processor.build("version", &version_message).await;
-
-        self.connection.write(built_version_message).await?;
-
-        let _recieved_version_payload = self.connection.read().await?;
-
-        let verack_message = self.data_processor.verack().await?;
-
-        let built_verack_message = self.data_processor.build("verack", &verack_message).await;
-
-        self.connection.write(built_verack_message).await?;
-
-        let _recieved_verack_payload = self.connection.read().await?;
-
-
-        Ok(())
-
-    }
-}
+mod error;
+mod handshaker;
+mod message_builder;
 
 #[tokio::main]
 async fn main() {
-
     let connection = BitcoinConnection::init("127.0.0.1", "18445");
 
-    let data_processor = BTCMessageBuilder {};
+    let data_processor = BTCMessageBuilder::default();
 
-    
-    let mut  handshaker = Handshaker {
-        connection, 
-        data_processor 
-    };
+    let mut handshaker = Handshaker::init(connection, data_processor);
 
     if let Err(error) = handshaker.handshake().await {
         println!("{}", error);
+        return;
     }
 
     println!("Hands have been shaken!");
+}
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use constants::DEVNET_CHAIN_MAGIC_BYTES;
+
+    #[tokio::test]
+    async fn test_devnet_handhsake() {
+        let connection = BitcoinConnection::init("testnet-seed.bitcoin.jonasschnelli.ch", "18333");
+
+        let mut data_processor = BTCMessageBuilder::default();
+
+        data_processor.set_magic_bytes(DEVNET_CHAIN_MAGIC_BYTES);
+
+        let mut handshaker = Handshaker::init(connection, data_processor);
+
+        let result = handshaker.handshake().await;
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_local_handshake() {
+        let connection = BitcoinConnection::init("127.0.0.1", "18445");
+
+        let data_processor = BTCMessageBuilder::default();
+
+        let mut handshaker = Handshaker::init(connection, data_processor);
+
+        let result = handshaker.handshake().await;
+
+        assert!(result.is_ok());
+    }
 }

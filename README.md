@@ -14,6 +14,8 @@ In order to run the node locally run ``` ./bitcoind --regtest -daemon -debug```.
 
 While running the node I am also looking the the generated logs, i used ``` tail -f debug.log ``` from ``~/.bitcoin/regtest`` where the debug.log file is located.
 
+```NOTE``` It is possible to connect to a node that is not running locally, for this the connection needs to be updated with the proper ip:port and the data processor has to use the proper magic bytes as well. This is visible in ```main.rs``` under the tests.
+
 After successfully runing the application in the log monitoring console this should be visible:
 ```
 2024-06-28T15:05:17Z [net] Added connection peer=19
@@ -31,12 +33,31 @@ and in the application console :
 
 ```
 Received message: command=version, length=103
+VersionMessage {
+    version: 70016,
+    services: 3081,
+    timestamp: 1721684449,
+    addr_recv_services: 0,
+    addr_recv_ip_address: "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    addr_recv_port: 0,
+    addr_trans_services: 3081,
+    addr_trans_ip_address: "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    addr_trans_port: 0,
+    nonce: 12046965804304383936,
+    user_agent_bytes: 17,
+    user_agent: "/Satoshi:27.99.0/",
+    start_height: 47,
+    relay: false,
+}
 Received message: command=verack, length=0
 Hands have been shaken!
 ```
 
-From my understanding this should mean that a handshake with the node was successful.
+This confirms a successful handshake with the target node.
 
-I realize this could have been written much simpler with just ~4 functions called directly from main without any structs and traits, i just like it this way, and makes it potentially easire to test separate parts .
+The main module ```Handshaker``` is using two submodules ```connection``` and ```data processor``` to execute its functionality. These two submodules work independently with the idea being that either can be exchanged or updated withouth having to adapt the other to facilitate easier testing and maintenance as long as the required contract/trait is fulfilled.
 
-I think it could also be potentially faster if i had not used ``Box<dyn std::error::Error>`` and instead returned a concrete Error.
+Tests in the main module are more akin to integration tests, while there are also unit tests in each of the ```connection``` and ```data_processor``` modules as well.
+
+
+
