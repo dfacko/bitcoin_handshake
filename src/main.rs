@@ -19,7 +19,7 @@ async fn main() {
     let mut handshaker = Handshaker::init(connection, data_processor);
 
     if let Err(error) = handshaker.handshake().await {
-        println!("{}", error);
+        println!("Handshake has failed with error: {}", error);
         return;
     }
 
