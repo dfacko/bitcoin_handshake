@@ -19,13 +19,23 @@ pub struct VersionMessage {
 }
 
 pub trait Builder {
+    ///  The purpose of this function is to encapsulate the given payload and build the final message
+    ///  that will be sent.
     fn build(
         &self,
         command: &str,
         payload: &[u8],
     ) -> impl std::future::Future<Output = Result<Vec<u8>, Error>> + Send;
+
+    /// The purpose of this function is to build the payload of the "version" message.
     fn version(&self) -> impl std::future::Future<Output = Result<Vec<u8>, Error>> + Send;
+
+    /// Same as the "version" function, but verack message payloads are empty.
     fn verack(&self) -> impl std::future::Future<Output = Result<Vec<u8>, Error>> + Send;
+
+    /// This function is responsible of parsing the "version message" payload
+    /// Ideally this functionality would also be split up to parse any message but for the
+    /// purpose of this small demo app this is enough.
     fn parse_message_payload(
         &self,
         payload: &[u8],

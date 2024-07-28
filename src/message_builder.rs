@@ -8,14 +8,9 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use crate::constants::*;
 
-/**
- * struct BtcMessageBuilder - Message factory
- * @magic_bytes: The magic bytes used in message headers for the appropriate bitcoin network
- *
- * BtcMessageBuilder is a submodule used by Handhsaker with the purpose of
- * building the messages that are sent to the target node, its only responsibility is
- * building message payloads and parsing recieved message payloads.
-*/
+/// BtcMessageBuilder is a submodule used by Handhsaker with the purpose of
+/// building the messages that are sent to the target node, its only responsibility is
+/// building message payloads and parsing recieved message payloads.
 pub struct BTCMessageBuilder {
     magic_bytes: [u8; 4],
 }
@@ -29,14 +24,6 @@ impl Default for BTCMessageBuilder {
 }
 
 impl Builder for BTCMessageBuilder {
-    /**
-     * build
-     * @command: The command or message type (version,verack)
-     * @payload: The payload of the message
-     *
-     *  The purpose of this function is to encapsulate the given payload and build the final message
-     *  that will be sent.
-     */
     async fn build(&self, command: &str, payload: &[u8]) -> Result<Vec<u8>, Error> {
         if command.len() > 12 {
             return Err(Error::Custom("command too long".to_owned()));
@@ -61,11 +48,6 @@ impl Builder for BTCMessageBuilder {
         Ok(message)
     }
 
-    /**
-     * version
-     *
-     * the purpose of this function is to build the payload of the "version" message.
-     */
     async fn version(&self) -> Result<Vec<u8>, Error> {
         let mut payload = Vec::new();
 
@@ -96,24 +78,10 @@ impl Builder for BTCMessageBuilder {
         Ok(payload)
     }
 
-    /**
-     * verack
-     *
-     * same as the "version" function, but verack message payloads are empty.
-     */
     async fn verack(&self) -> Result<Vec<u8>, Error> {
         Ok(vec![])
     }
 
-    /**
-     * parse_version_message_payload
-     * @payload: the payload/bytes of the message to parse
-     *
-     *
-     * this function is responsible of parsing the "version message" payload
-     * Ideally this functionality would also be split up to parse any message but for the
-     * purpose of this small demo app this is enough.
-     */
     async fn parse_message_payload(&self, payload: &[u8]) -> Result<VersionMessage, Error> {
         // Ensure payload has at least the minimum size for a version message
         if payload.len() < 85 {

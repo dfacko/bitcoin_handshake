@@ -9,13 +9,12 @@ use tokio::{
     net::TcpStream,
 };
 
-/**
- * struct BitcoinConnection - Represents a connection to a Bitcoin network
- *
- * module is used by Handshaker to connect to the target node and communicate with it.
- * This module's only responsibility is to establish a connection and send/recieve data.
- * What type of data and data processing should not matter in this module as those should be independent.
-*/
+/// BitcoinConnection - Represents a connection to a Bitcoin network
+///
+/// module is used by Handshaker to connect to the target node and communicate with it.
+/// This module's only responsibility is to establish a connection and send/recieve data.
+/// What type of data and data processing should not matter in this module as those should be independent.
+///
 pub struct BitcoinConnection {
     pub ip_address: String,
     pub port: String,
@@ -23,13 +22,8 @@ pub struct BitcoinConnection {
 }
 
 impl BitcoinConnection {
-    /**
-     * init
-     * @ip_address: ip address to connect to
-     * @port: port to connect to
-     *
-     * Helper function to initialize the BitcoinConnection struct
-     */
+    /// Helper function to initialize the BitcoinConnection struct
+    ///
     pub fn init(ip_address: &str, port: &str) -> Self {
         Self {
             ip_address: ip_address.to_owned(),
@@ -40,13 +34,6 @@ impl BitcoinConnection {
 }
 
 impl Connection for BitcoinConnection {
-    /**
-     * connect
-     * @mut self
-     *
-     * Establishes a connection on ip:port and updates self
-     * to contain the connection stream
-     */
     async fn connect(&mut self) -> Result<(), Error> {
         let stream = TcpStream::connect(format!("{}:{}", self.ip_address, self.port)).await?;
 
@@ -55,15 +42,6 @@ impl Connection for BitcoinConnection {
         Ok(())
     }
 
-    // TODO:
-    /**
-     * read - Reads data from a stream
-     *
-     * Reads data from a stream, considering we are only performing handshakes
-     * message headers are ignored and the returned data only contains the message payload.
-     * Ideally the whole message could be returned to the data processor to remove the burden of
-     * checking magic bytes and other
-     */
     async fn read(&mut self) -> Result<Vec<u8>, Error> {
         if let Some(ref mut stream) = self.stream {
             let mut header = [0; 24];
@@ -105,9 +83,6 @@ impl Connection for BitcoinConnection {
         Err(Error::Custom("no connection".to_owned()))
     }
 
-    /**
-     * write - Write data to the self containd stream
-     */
     async fn write(&mut self, data: Vec<u8>) -> Result<(), Error> {
         if let Some(ref mut stream) = self.stream {
             stream.write_all(&data).await?;

@@ -1,23 +1,19 @@
 use crate::{builder::Builder, connection::Connection, error::Error};
 
-/** struct Handshaker
- *
- * This struct is the main module and is responsible to execute the handshake.
- * To do this it uses any other modules that fulfill the Connection and Builder contracts.
-
-*/
+/// This struct is the main module and is responsible to execute the handshake.
+/// To do this it uses any other modules that fulfill the Connection and Builder contracts.
+///
+///
 pub struct Handshaker<C: Connection, B: Builder> {
     connection: C,
     data_processor: B,
 }
 
 impl<C: Connection, B: Builder> Handshaker<C, B> {
-    /**
-     * handshake - The main entrypoint of Handshaker
-     *
-     * This is where the actual handshake functionality is implemented
-     * using connection's and data_processor's trait functions.
-     */
+    /// The main entrypoint of Handshaker
+    ///
+    /// This is where the actual handshake functionality is implemented
+    /// using connection's and data_processor's trait functions.
     pub async fn handshake(&mut self) -> Result<(), Error> {
         self.connection.connect().await?;
 
@@ -54,12 +50,8 @@ impl<C: Connection, B: Builder> Handshaker<C, B> {
 
         Ok(())
     }
-    /**
-     * init - Initialite a Handshaker instance.
-     * @connection: Any structure that statisfies the Connection Trait.
-     * @data_processor: Any structure that statisfire the Connection Trait.
-     *
-     */
+
+    /// Initialite a Handshaker instance.
     pub fn init(connection: C, data_processor: B) -> Self {
         Self {
             connection,
